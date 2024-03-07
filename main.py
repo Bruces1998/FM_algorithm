@@ -1,3 +1,9 @@
+'''
+To run this program,
+install python3 in your computer 
+and run >> python3 main.py
+'''
+
 ##### IMPORTS ######
 import random
 import datetime
@@ -34,9 +40,9 @@ class Cell:
         self.F = 0
         self.T = 0
         self.cell_gain = 0
-        self.lock_status = 0  # 1=locked, 0=unlocked
+        self.lock_status = 0 
         self.cell_type = ""
-        self.cell_partition = 0  # A = 0, B = -1
+        self.cell_partition = 0  
         self.net_list = set()
         self.cell_size = 0
 
@@ -156,6 +162,23 @@ def isbalanced(target_cell):
         return True
     else:
         return False
+    
+def initialize_buckets():
+    global cell_map, gain_bucket
+    for curr_cell in cell_map:
+        cell_map[curr_cell].cell_gain = 0
+        for curr_net in cell_map[curr_cell].net_list:
+            if cell_map[curr_cell].cell_partition == 0:
+                cell_map[curr_cell].F = net_map[curr_net].Asize
+                cell_map[curr_cell].T = net_map[curr_net].Bsize
+            elif cell_map[curr_cell].cell_partition == -1:
+                cell_map[curr_cell].F = net_map[curr_net].Bsize
+                cell_map[curr_cell].T = net_map[curr_net].Asize
+            if cell_map[curr_cell].F == 1:
+                cell_map[curr_cell].cell_gain += 1
+            if cell_map[curr_cell].T == 0:
+                cell_map[curr_cell].cell_gain -= 1
+        gain_bucket.setdefault(cell_map[curr_cell].cell_gain, []).append(curr_cell)
 
 def update_buckets(curr_cell, prev_gain):
     global gain_bucket
@@ -226,20 +249,7 @@ def fiducciaMathAlgo():
                     cell_map[curr_cell].cell_partition = ~cell_map[curr_cell].cell_partition
 
         gain_bucket.clear()
-        for curr_cell in cell_map:
-            cell_map[curr_cell].cell_gain = 0
-            for curr_net in cell_map[curr_cell].net_list:
-                if cell_map[curr_cell].cell_partition == 0:
-                    cell_map[curr_cell].F = net_map[curr_net].Asize
-                    cell_map[curr_cell].T = net_map[curr_net].Bsize
-                elif cell_map[curr_cell].cell_partition == -1:
-                    cell_map[curr_cell].F = net_map[curr_net].Bsize
-                    cell_map[curr_cell].T = net_map[curr_net].Asize
-                if cell_map[curr_cell].F == 1:
-                    cell_map[curr_cell].cell_gain += 1
-                if cell_map[curr_cell].T == 0:
-                    cell_map[curr_cell].cell_gain -= 1
-            gain_bucket.setdefault(cell_map[curr_cell].cell_gain, []).append(curr_cell)
+        initialize_buckets()
 
         locked_cells.clear()
         max_gain_index = max(gain_bucket.keys())
